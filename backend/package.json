@@ -1,0 +1,14 @@
+{
+  "name": "fieldtask-backend",
+  "version": "1.0.0",
+  "description": "Backend API untuk aplikasi FieldTask",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": ["fieldtask", "api", "express"],
+  "author": "Rizqullah Asyam",
+  "license": "ISC",
+  "type": "commonjs"
+}
