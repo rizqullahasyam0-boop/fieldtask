@@ -1,7 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const authRoutes = require('./routes/authRoutes'); // <-- Tambahin ini
+
+// Import Routes
+const authRoutes = require('./routes/authRoutes');
+const taskRoutes = require('./routes/taskRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,7 +19,8 @@ app.get('/', (req, res) => {
 });
 
 // Daftarin Routes
-app.use('/api/auth', authRoutes); // <-- Tambahin ini
+app.use('/api/auth', authRoutes);
+app.use('/api/tasks', taskRoutes); // <-- Route baru
 
 // Start server
 app.listen(PORT, () => {
