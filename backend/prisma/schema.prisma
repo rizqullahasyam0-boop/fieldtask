@@ -1,3 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
+}
+
+// Model User (Admin, Supervisor, Teknisi)
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   // "admin", "supervisor", "technician"
+  phone        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relasi
+  createdTasks  Task[]           @relation("CreatedTasks")
+  assignedTasks Task[]           @relation("AssignedTasks")
+  taskUpdates   TaskUpdate[]
+  attachments   TaskAttachment[]
+}
+
+// Model Tugas
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  status      String   @default("pending") // pending, assigned, in_progress, on_site, completed, verified, cancelled
+  priority    String   @default("medium")  // low, medium, high, urgent
+  deadline    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relasi
+  createdById String
+  createdBy   User     @relation("CreatedTasks", fields: [createdById], references: [id])
+  
+  assignedToId String?
+  assignedTo   User?   @relation("AssignedTasks", fields: [assignedToId], references: [id])
+
+  updates     TaskUpdate[]
+  attachments TaskAttachment[]
+}
+
+// Model Riwayat Update Status (Audit Trail)
+model TaskUpdate {
+  id          String   @id @default(uuid())
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  updatedById String
+  updatedBy   User     @relation(fields: [updatedById], references: [id])
+  oldStatus   String?
+  newStatus   String
+  notes       String?
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime @default(now())
+}
+
+// Model Lampiran Foto/Bukti
+model TaskAttachment {
+  id           String   @id @default(uuid())
+  taskId       String
+  task         Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  fileUrl      String
+  fileType     String?
+  createdAt    DateTime @default(now())
 }
