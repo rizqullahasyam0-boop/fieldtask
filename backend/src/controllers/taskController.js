@@ -73,4 +73,34 @@ const updateTaskStatus = async (req, res) => {
   }
 };
 
-module.exports = { createTask, getTasks, updateTaskStatus };
+// 4. Admin ngedit tugas (termasuk assign ke teknisi)
+const updateTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, location, priority, assignedToId, deadline } = req.body;
+
+    const dataToUpdate = {
+      title,
+      description,
+      location,
+      priority,
+      assignedToId,
+      deadline: deadline ? new Date(deadline) : null,
+    };
+
+    if (assignedToId) {
+      dataToUpdate.status = 'assigned';
+    }
+
+    const updatedTask = await prisma.task.update({
+      where: { id },
+      data: dataToUpdate,
+    });
+
+    res.status(200).json({ message: 'Tugas berhasil diperbarui!', task: updatedTask });
+  } catch (error) {
+    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+  }
+};
+
+module.exports = { createTask, getTasks, updateTaskStatus, updateTask };
