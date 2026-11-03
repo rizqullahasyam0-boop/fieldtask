@@ -5,10 +5,25 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "postinstall": "prisma skills sync || exit 0"
   },
-  "keywords": ["fieldtask", "api", "express"],
+  "keywords": [
+    "fieldtask",
+    "api",
+    "express"
+  ],
   "author": "Rizqullah Asyam",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "prisma": "^7.10.1"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "@prisma/orm-postgres": "^8.0.0-rc.22",
+    "dotenv": "^18.0.9",
+    "pg": "^8.23.1"
+  }
 }
