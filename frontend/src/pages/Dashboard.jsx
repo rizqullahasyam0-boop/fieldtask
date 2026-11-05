@@ -12,6 +12,8 @@ function Dashboard() {
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
   const [priority, setPriority] = useState('medium');
+  const [assignedToId, setAssignedToId] = useState(''); // BARU: Buat nyimpen ID teknisi
+  const [technicians, setTechnicians] = useState([]); // BARU: Buat nyimpen list teknisi
   const [formError, setFormError] = useState('');
 
   // Fungsi Ambil Tugas
@@ -29,10 +31,25 @@ function Dashboard() {
     }
   };
 
+  // Fungsi Ambil Daftar Teknisi (BARU)
+  const fetchTechnicians = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await api.get('/auth/technicians', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setTechnicians(response.data.technicians);
+    } catch (error) {
+      console.error("Gagal ambil teknisi", error);
+    }
+  };
+
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) setUser(JSON.parse(savedUser));
+    
     fetchTasks();
+    fetchTechnicians(); // Panggil teknisi pas halaman dimuat
   }, []);
 
   // Fungsi Bikin Tugas Baru
@@ -45,7 +62,8 @@ function Dashboard() {
         title,
         description,
         location,
-        priority
+        priority,
+        assignedToId: assignedToId || null // Masukin ID teknisi kalau ada
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -56,7 +74,8 @@ function Dashboard() {
       setDescription('');
       setLocation('');
       setPriority('medium');
-      fetchTasks(); // Ambil data terbaru
+      setAssignedToId('');
+      fetchTasks(); 
       
     } catch (error) {
       setFormError(error.response?.data?.message || 'Gagal bikin tugas');
@@ -82,7 +101,6 @@ function Dashboard() {
             <p className="text-sm text-gray-600">Halo, {user?.name} ({user?.role})</p>
           </div>
           <div className="space-x-2">
-            {/* Tombol ini cuma muncul buat Admin */}
             {user?.role === 'admin' && (
               <button 
                 onClick={() => setShowForm(true)}
@@ -124,6 +142,15 @@ function Dashboard() {
                   <option value="high">High Priority</option>
                 </select>
 
+                {/* DROPDOWN TEKNISI BARU */}
+                <select value={assignedToId} onChange={(e) => setAssignedToId(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md">
+                  <option value="">-- Pilih Teknisi (Opsional) --</option>
+                  {technicians.map((tech) => (
+                    <option key={tech.id} value={tech.id}>{tech.name}</option>
+                  ))}
+                </select>
+
                 <div className="flex justify-end space-x-2 mt-4">
                   <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-gray-600 bg-gray-200 rounded hover:bg-gray-300">Batal</button>
                   <button type="submit" className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700">Simpan</button>
@@ -148,9 +175,14 @@ function Dashboard() {
                       <h3 className="font-bold text-lg">{task.title}</h3>
                       <p className="text-gray-600">{task.description}</p>
                       <p className="text-sm text-gray-500 mt-1">📍 {task.location || 'Tanpa Lokasi'}</p>
+                      {/* Nampilin siapa teknisinya */}
+                      <p className="text-sm text-blue-600 mt-1 font-semibold">
+                        👷 {task.assignedTo ? task.assignedTo.name : 'Belum di-assign'}
+                      </p>
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                       task.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                      task.status === 'assigned' ? 'bg-purple-100 text-purple-800' :
                       task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 
                       'bg-green-100 text-green-800'
                     }`}>
