@@ -34,11 +34,13 @@ const getTasks = async (req, res) => {
   try {
     let tasks;
     if (req.user.role === 'admin') {
+      // Admin liat semua tugas, lengkap sama data teknisinya
       tasks = await prisma.task.findMany({ include: { assignedTo: true } });
     } else {
+      // Teknisi cuma liat tugasnya sendiri, dan kita ambil data assignedTo (dirinya sendiri)
       tasks = await prisma.task.findMany({ 
         where: { assignedToId: req.user.id },
-        include: { createdBy: true }
+        include: { assignedTo: true } // <-- BUG DIPERBAIKI DI SINI
       });
     }
     res.status(200).json({ tasks });
