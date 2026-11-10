@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: 'https://fieldtask-2qox.onrender.com/api', // <-- Ganti ke link Render
 });
 
 export default api;
