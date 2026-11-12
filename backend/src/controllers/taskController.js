@@ -1,4 +1,4 @@
-const prisma = require('../config/prisma'); // <-- Import dari config
+const prisma = require('../config/prisma');
 
 // 1. Admin bikin tugas
 const createTask = async (req, res) => {
@@ -75,11 +75,7 @@ const updateTask = async (req, res) => {
     const { title, description, location, priority, assignedToId, deadline } = req.body;
 
     const dataToUpdate = {
-      title,
-      description,
-      location,
-      priority,
-      assignedToId,
+      title, description, location, priority, assignedToId,
       deadline: deadline ? new Date(deadline) : null,
     };
 
@@ -98,4 +94,22 @@ const updateTask = async (req, res) => {
   }
 };
 
-module.exports = { createTask, getTasks, updateTaskStatus, updateTask };
+// 5. Hapus Tugas (FITUR BARU)
+const deleteTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Hapus relasi dulu (TaskUpdate dan TaskAttachment) biar nggak error Foreign Key
+    await prisma.taskUpdate.deleteMany({ where: { taskId: id } });
+    await prisma.taskAttachment.deleteMany({ where: { taskId: id } });
+
+    // Hapus tugas utamanya
+    await prisma.task.delete({ where: { id } });
+
+    res.status(200).json({ message: 'Tugas berhasil dihapus!' });
+  } catch (error) {
+    res.status(500).json({ message: 'Terjadi kesalahan server', error: error.message });
+  }
+};
+
+module.exports = { createTask, getTasks, updateTaskStatus, updateTask, deleteTask };
