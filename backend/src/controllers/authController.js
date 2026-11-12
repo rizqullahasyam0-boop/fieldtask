@@ -1,12 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
-const { PrismaPg } = require('@prisma/adapter-pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
-// Setup Prisma 7 dengan Adapter
-const connectionString = process.env.DATABASE_URL;
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
+const prisma = require('../config/prisma'); // <-- Import dari config
 
 // 1. Fungsi Register (Daftar)
 const register = async (req, res) => {
@@ -71,7 +65,7 @@ const login = async (req, res) => {
   }
 };
 
-// 3. Fungsi Ambil Daftar Teknisi (BARU!)
+// 3. Fungsi Ambil Daftar Teknisi
 const getTechnicians = async (req, res) => {
   try {
     const technicians = await prisma.user.findMany({

@@ -1,9 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
-const { PrismaPg } = require('@prisma/adapter-pg');
-
-const connectionString = process.env.DATABASE_URL;
-const adapter = new PrismaPg({ connectionString });
-const prisma = new PrismaClient({ adapter });
+const prisma = require('../config/prisma'); // <-- Import dari config
 
 // 1. Admin bikin tugas
 const createTask = async (req, res) => {
@@ -34,13 +29,11 @@ const getTasks = async (req, res) => {
   try {
     let tasks;
     if (req.user.role === 'admin') {
-      // Admin liat semua tugas, lengkap sama data teknisinya
       tasks = await prisma.task.findMany({ include: { assignedTo: true } });
     } else {
-      // Teknisi cuma liat tugasnya sendiri, dan kita ambil data assignedTo (dirinya sendiri)
       tasks = await prisma.task.findMany({ 
         where: { assignedToId: req.user.id },
-        include: { assignedTo: true } // <-- BUG DIPERBAIKI DI SINI
+        include: { assignedTo: true }
       });
     }
     res.status(200).json({ tasks });
