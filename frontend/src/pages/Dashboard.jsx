@@ -7,8 +7,6 @@ function Dashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  
-  // State Tema
   const [isDark, setIsDark] = useState(false);
 
   // State Form
@@ -27,7 +25,7 @@ function Dashboard() {
   const [photo, setPhoto] = useState(null);
   const [uploadLoading, setUploadLoading] = useState(false);
 
-  // State Statistik Admin
+  // State Statistik
   const [stats, setStats] = useState({ total: 0, pending: 0, completed: 0 });
 
   const fetchTasks = async () => {
@@ -65,7 +63,6 @@ function Dashboard() {
     }
   };
 
-  // Efek buat ngecek tema yang tersimpan & user
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     const token = localStorage.getItem('token');
@@ -79,7 +76,6 @@ function Dashboard() {
     const parsedUser = JSON.parse(savedUser);
     setUser(parsedUser);
 
-    // Terapin tema
     if (savedTheme === 'dark') {
       setIsDark(true);
       document.documentElement.classList.add('dark');
@@ -92,7 +88,6 @@ function Dashboard() {
     fetchTasks();
   }, [navigate]);
 
-  // Fungsi Toggle Tema
   const toggleTheme = () => {
     if (isDark) {
       setIsDark(false);
@@ -136,6 +131,21 @@ function Dashboard() {
       fetchTasks(); 
     } catch (error) {
       alert(error.response?.data?.message || 'Gagal update status');
+    }
+  };
+
+  // Fungsi Hapus Tugas (BARU)
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm("Yakin mau hapus tugas ini?")) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      await api.delete(`/tasks/${taskId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchTasks(); // Refresh list
+    } catch (error) {
+      alert(error.response?.data?.message || 'Gagal hapus tugas');
     }
   };
 
@@ -192,7 +202,6 @@ function Dashboard() {
             <p className="text-xs text-gray-500 dark:text-gray-400">{user?.name} • {user?.role === 'admin' ? 'Admin' : 'Teknisi'}</p>
           </div>
           <div className="flex items-center gap-2">
-            {/* Tombol Toggle Tema */}
             <button onClick={toggleTheme} className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-yellow-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
               {isDark ? '☀️' : '🌙'}
             </button>
@@ -223,7 +232,6 @@ function Dashboard() {
           </div>
         )}
 
-        {/* TOMBOL BUAT TUGAS */}
         {user?.role === 'admin' && (
           <button onClick={() => setShowForm(true)} className="w-full mb-6 bg-blue-600 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-blue-700 transition-colors">
             + Buat Tugas Baru
@@ -278,6 +286,7 @@ function Dashboard() {
                   </div>
                 </div>
                   
+                {/* AKSI UNTUK TEKNISI */}
                 {user?.role === 'technician' && (
                   <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                     {task.status !== 'completed' && (
@@ -292,12 +301,21 @@ function Dashboard() {
                         </button>
                       </div>
                     )}
-                    
                     <button onClick={() => { setSelectedTaskId(task.id); setShowUpload(true); }} className="w-full bg-gray-800 dark:bg-gray-700 text-white font-semibold py-2.5 rounded-lg text-sm hover:bg-gray-900 dark:hover:bg-gray-600">
                       📷 Upload Bukti
                     </button>
                   </div>
                 )}
+
+                {/* AKSI UNTUK ADMIN (HAPUS TUGAS) */}
+                {user?.role === 'admin' && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end">
+                    <button onClick={() => handleDeleteTask(task.id)} className="text-xs text-red-500 font-semibold hover:text-red-700 bg-red-50 dark:bg-red-900/30 dark:hover:bg-red-900/50 px-3 py-1.5 rounded-md">
+                      🗑️ Hapus Tugas
+                    </button>
+                  </div>
+                )}
+
               </div>
             ))}
           </div>
